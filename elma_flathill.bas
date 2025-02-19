@@ -1,4 +1,4 @@
-REM version without adding text polygons
+
 max_x = 800: max_y = 600
 res_x = max_x + 200: res_y = max_y + 200
 shift_x = (res_x - max_x) / 2
@@ -19,7 +19,7 @@ DO
     PAINT (0, 0), background_color 'paint background
     COLOR 10, background_color
     PRINT ""
-    PRINT "Flat track & hill level generator v1.08 by iCS [.lev] 2019"
+    PRINT "Flat track & hill polygon generator v1.09 by iCS [.lev] 2019"
 
     COLOR 15, background_color: PRINT "[arrows]",: COLOR 7, background_color: PRINT "level size =", max_x; "x"; (max_y / levtype)
     IF levtype = 1 THEN: COLOR 15, background_color: PRINT "(Shift+)[Q/A]",: COLOR 7, background_color: PRINT "raise      =", raise
@@ -55,25 +55,41 @@ DO
 
 
     LINE (shift_x, shift_y)-(shift_x, (max_y / levtype) + shift_y), line_color 'draw left wall
+    LINE -(shift_x + 30, (max_y / levtype) + shift_y), line_color 'safe space for the bike
 
     DO
-        RANDOMIZE TIMER
-        variation = (RND * varvar - 1) - (varvar / 2)
-        RANDOMIZE TIMER
-        IF levtype = 1 THEN x = x + 0.1 + (RND * (max_x / detail)) 'go to next point
+        '      RANDOMIZE TIMER
+        variation = (-1 * varvar) + (2 * varvar * RND)
+
+        '       RANDOMIZE TIMER
+        IF levtype = 1 THEN x = x + 0.1 + (RND * (max_x / (detail))) 'go to next point
+
         IF levtype = 2 THEN x = x + (RND * (max_x / detail)) + (RND * (varvar))
         IF x >= max_x THEN x = max_x: EXIT DO
-        RANDOMIZE TIMER
-        variation = INT((RND * varvar - 1)) - INT(varvar / 2)
 
-        IF levtype = 1 THEN y = y - ((raise + variation) / 15)
+        REM _LIMIT 10
+        '        RANDOMIZE TIMER
+        REM        variation = INT((RND * varvar - 1)) - INT(varvar / 2)
+        variation = (-1 * varvar) + (2 * varvar * RND)
+        REM        IF levtype = 1 THEN y = y - ((raise * RND) / (2 + (10 * RND))) + (variation * RND)
+        IF levtype = 1 THEN y = y - 0.1 - (raise / 20) - (variation / 10)
+
         IF levtype = 2 THEN y = (max_y / levtype) - (RND * raise)
 
 
-        IF y <= 10 THEN y = 10: EXIT DO
+        IF y <= 20 THEN y = 20: EXIT DO
         LINE -(x + shift_x, y + shift_y), line_color 'continue line
         klipbord$ = klipbord$ + LTRIM$(STR$(x)) + "," + LTRIM$(STR$(y)) + (CHR$(13) + CHR$(10))
+
+        REM DEBUG
+        REM        LOCATE 1, 1: PRINT "x: ", x, "y: ", y, "varvar: ", varvar, "variation: ", variation
+        REM DEBUG
+        REM _LIMIT 10
+
+
     LOOP
+
+
 
     'closing lines  - hill
     IF levtype = 1 THEN
@@ -159,7 +175,7 @@ DO
         CASE "w"
             x = startplace: y = max_y
             detail = detail + 5
-            IF detail > 200 THEN detail = 200
+            IF detail > 300 THEN detail = 300
         CASE "s"
             x = startplace: y = max_y
             detail = ABS(detail - 5)
@@ -185,7 +201,7 @@ DO
         CASE "W"
             x = startplace: y = max_y
             detail = detail + 1
-            IF detail > 200 THEN detail = 200
+            IF detail > 300 THEN detail = 300
         CASE "S"
             x = startplace: y = max_y
             detail = ABS(detail - 1)
@@ -373,7 +389,7 @@ DO
 
                 klipbord$ = ""
                 COLOR 10, background_color
-                PRINT outlev$ + " saved!"
+                PRINT outlev$ + " saved! To make .LEV file, import the SVG output into SLE (Smibu's Level Editor)!"
                 count = count + 1
             END IF
             GOTO 100
