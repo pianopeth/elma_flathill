@@ -3,7 +3,7 @@ max_x = 800: max_y = 600
 res_x = max_x + 200: res_y = max_y + 200
 shift_x = (res_x - max_x) / 2
 shift_y = (res_y - max_y) / 2
-raise = 25: detail = 50: varvar = 10: startplace = 30 'level parameters
+raise = 25: detail = 50: varvar = 10: startplace = 60 'level parameters
 x = startplace: y = max_y
 background_color = 104: sky_color = 54: line_color = 7 'paint colors
 filename$ = "out"
@@ -19,7 +19,7 @@ DO
     PAINT (0, 0), background_color 'paint background
     COLOR 10, background_color
     PRINT ""
-    PRINT "Flat track & hill polygon generator v1.2 (2022-05-08) by iCS [.lev] 2019-2022"
+    PRINT "Flat track & hill polygon generator v1.3 (2023-09-01) by iCS [.lev] 2019-2022"
 
     COLOR 15, background_color: PRINT "[arrows]",: COLOR 7, background_color: PRINT "level size =", max_x; "x"; (max_y / levtype)
     IF levtype = 1 THEN: COLOR 15, background_color: PRINT "(Shift+)[Q/A]",: COLOR 7, background_color: PRINT "raise      =", raise
@@ -43,9 +43,16 @@ DO
 
     PRINT ""
     COLOR 15, background_color
+    PRINT "[F]"
+    COLOR 7, background_color
+    PRINT "FULL RANDOM!"
+
+    PRINT ""
+    COLOR 15, background_color
     PRINT "[R]"
     COLOR 7, background_color
-    PRINT "RANDOMIZE!  "
+    PRINT "SEMI-RANDOM!"
+
 
     ' PRINT ""
     ' COLOR 15, background_color
@@ -61,8 +68,9 @@ DO
     PRINT "SAVE TO SVG!"
 
 
-    LINE (shift_x, shift_y)-(shift_x, (max_y / levtype) + shift_y), line_color 'draw left wall
-    LINE -(shift_x + 30, (max_y / levtype) + shift_y), line_color 'safe space for the bike
+    currentraise = raise * RND
+    LINE (shift_x, shift_y)-(shift_x, (max_y / levtype) - currentraise + shift_y), line_color 'draw left wall
+    LINE -(shift_x + startplace, (max_y / levtype) - currentraise + shift_y), line_color 'safe space for the bike
     klipbord$ = klipbord$ + LTRIM$(STR$(x)) + "," + LTRIM$(STR$(y / levtype)) + (CHR$(13) + CHR$(10))
 
     DO
@@ -122,12 +130,12 @@ DO
     PAINT (shift_x + 1, shift_y + 1), sky_color, line_color
 
     'draw elmabike
-    CIRCLE (shift_x + 12, (max_y / levtype) + shift_y - 19), 2, 15
-    CIRCLE (shift_x + 4, (max_y / levtype) + shift_y - 4), 4, 15
-    CIRCLE (shift_x + 21, (max_y / levtype) + shift_y - 4), 4, 15
-    PAINT (shift_x + 12, (max_y / levtype) + shift_y - 19), 10, 15
-    PAINT (shift_x + 4, (max_y / levtype) + shift_y - 4), 10, 15
-    PAINT (shift_x + 21, (max_y / levtype) + shift_y - 4), 10, 15
+    CIRCLE (shift_x + 12, (max_y / levtype) - currentraise + shift_y - 19), 2, 15
+    CIRCLE (shift_x + 4, (max_y / levtype) - currentraise + shift_y - 4), 4, 15
+    CIRCLE (shift_x + 21, (max_y / levtype) - currentraise + shift_y - 4), 4, 15
+    PAINT (shift_x + 12, (max_y / levtype) - currentraise + shift_y - 19), 10, 15
+    PAINT (shift_x + 4, (max_y / levtype) - currentraise + shift_y - 4), 10, 15
+    PAINT (shift_x + 21, (max_y / levtype) - currentraise + shift_y - 4), 10, 15
 
     'bottom menu
     _FONT 8
@@ -353,13 +361,25 @@ DO
             raise = INT(max_y / 20)
             varvar = INT(max_x / 200)
 
-        CASE "r", "R" 'full random
+        CASE "r", "R" 'safe random
+            RANDOMIZE TIMER
+            'levtype = INT(RND * 2): IF levtype = 0 THEN levtype = 2
+            max_x = 350 + INT(RND * 649)
+            max_y = (600 / levtype) + INT(RND * (150 * levtype)) * 2
+            RANDOMIZE TIMER
+            detail = (INT(RND * 99)) + 1
+            RANDOMIZE TIMER
+            raise = INT(RND * 29) + 1
+            RANDOMIZE TIMER
+            varvar = INT(RND * 29) + 1
+            x = startplace: y = max_y
+
+
+        CASE "f", "F" 'full random
             RANDOMIZE TIMER
             levtype = INT(RND * 2): IF levtype = 0 THEN levtype = 2
             max_x = 350 + INT(RND * 1449)
             max_y = (600 / levtype) + INT(RND * (150 * levtype)) * 2
-
-
             RANDOMIZE TIMER
             detail = (INT(RND * 299)) + 1
             RANDOMIZE TIMER
@@ -367,6 +387,7 @@ DO
             RANDOMIZE TIMER
             varvar = INT(RND * 99) + 1
             x = startplace: y = max_y
+
 
             '        CASE "x", "X" 'toggle slow draw
             '            IF slowdraw = 0 THEN slowdraw = 1 ELSE slowdraw = 0
