@@ -19,7 +19,7 @@ DO
     PAINT (0, 0), background_color 'paint background
     COLOR 10, background_color
     PRINT ""
-    PRINT "Flat track & hill polygon generator v1.09 by iCS [.lev] 2019"
+    PRINT "Flat track & hill polygon generator v1.2 (2022-05-08) by iCS [.lev] 2019-2022"
 
     COLOR 15, background_color: PRINT "[arrows]",: COLOR 7, background_color: PRINT "level size =", max_x; "x"; (max_y / levtype)
     IF levtype = 1 THEN: COLOR 15, background_color: PRINT "(Shift+)[Q/A]",: COLOR 7, background_color: PRINT "raise      =", raise
@@ -47,6 +47,13 @@ DO
     COLOR 7, background_color
     PRINT "RANDOMIZE!  "
 
+    ' PRINT ""
+    ' COLOR 15, background_color
+    ' PRINT "[X]"
+    ' COLOR 7, background_color
+    ' PRINT "SLOW DRAW   "
+
+
     PRINT ""
     COLOR 15, background_color
     PRINT "[ENTER]"
@@ -56,23 +63,25 @@ DO
 
     LINE (shift_x, shift_y)-(shift_x, (max_y / levtype) + shift_y), line_color 'draw left wall
     LINE -(shift_x + 30, (max_y / levtype) + shift_y), line_color 'safe space for the bike
+    klipbord$ = klipbord$ + LTRIM$(STR$(x)) + "," + LTRIM$(STR$(y / levtype)) + (CHR$(13) + CHR$(10))
 
     DO
-        '      RANDOMIZE TIMER
+        RANDOMIZE TIMER
         variation = (-1 * varvar) + (2 * varvar * RND)
 
-        '       RANDOMIZE TIMER
+        RANDOMIZE TIMER
         IF levtype = 1 THEN x = x + 0.1 + (RND * (max_x / (detail))) 'go to next point
 
         IF levtype = 2 THEN x = x + (RND * (max_x / detail)) + (RND * (varvar))
         IF x >= max_x THEN x = max_x: EXIT DO
 
-        REM _LIMIT 10
-        '        RANDOMIZE TIMER
+        '        if slowdraw=1 then _LIMIT 30 else
+        RANDOMIZE TIMER
         REM        variation = INT((RND * varvar - 1)) - INT(varvar / 2)
         variation = (-1 * varvar) + (2 * varvar * RND)
         REM        IF levtype = 1 THEN y = y - ((raise * RND) / (2 + (10 * RND))) + (variation * RND)
         IF levtype = 1 THEN y = y - 0.1 - (raise / 20) - (variation / 10)
+
 
         IF levtype = 2 THEN y = (max_y / levtype) - (RND * raise)
 
@@ -82,9 +91,9 @@ DO
         klipbord$ = klipbord$ + LTRIM$(STR$(x)) + "," + LTRIM$(STR$(y)) + (CHR$(13) + CHR$(10))
 
         REM DEBUG
-        REM        LOCATE 1, 1: PRINT "x: ", x, "y: ", y, "varvar: ", varvar, "variation: ", variation
+        REM LOCATE 1, 1: PRINT "x: ", x, "y: ", y, "varvar: ", varvar, "variation: ", variation
         REM DEBUG
-        REM _LIMIT 10
+        ' if slowdraw=1 then _LIMIT 30 else
 
 
     LOOP
@@ -218,7 +227,7 @@ DO
 
         CASE CHR$(0) + CHR$(72) 'up
             max_y = max_y + 50
-            IF max_y >= 1800 THEN max_y = 1800
+            IF max_y >= 1000 THEN max_y = 1000
             x = startplace: y = max_y
         CASE CHR$(0) + CHR$(80) 'down
             max_y = max_y - 50
@@ -239,8 +248,8 @@ DO
             x = startplace: y = max_y
             max_x = 350
             max_y = 600
-            detail = INT(max_x / 75)
-            raise = INT(max_y / 36)
+            detail = INT(max_x / 65)
+            raise = INT(max_y / 35)
             varvar = INT(max_x / 50)
 
         CASE CHR$(0) + CHR$(60) 'F2
@@ -248,8 +257,8 @@ DO
             x = startplace: y = max_y
             max_x = 660
             max_y = 600
-            detail = INT(max_x / 75)
-            raise = INT(max_y / 36)
+            detail = INT(max_x / 65)
+            raise = INT(max_y / 35)
             varvar = INT(max_x / 50)
 
         CASE CHR$(0) + CHR$(61) 'F3
@@ -257,8 +266,8 @@ DO
             x = startplace: y = max_y
             max_x = 1000
             max_y = 600
-            detail = INT(max_x / 75)
-            raise = INT(max_y / 36)
+            detail = INT(max_x / 60)
+            raise = INT(max_y / 35)
             varvar = INT(max_x / 50)
 
         CASE CHR$(0) + CHR$(62) 'F4
@@ -266,8 +275,8 @@ DO
             x = startplace: y = max_y
             max_x = 1800
             max_y = 600
-            detail = INT(max_x / 75)
-            raise = INT(max_y / 36)
+            detail = INT(max_x / 60)
+            raise = INT(max_y / 35)
             varvar = INT(max_x / 50)
 
             'chris
@@ -347,12 +356,21 @@ DO
         CASE "r", "R" 'full random
             RANDOMIZE TIMER
             levtype = INT(RND * 2): IF levtype = 0 THEN levtype = 2
-            max_x = 350 + ((INT(RND * 29)) * 50)
-            max_y = 600 + (INT(RND * 6) * levtype * 50)
-            detail = INT((RND * 40) + 0.5) * 5
-            raise = INT((RND * 79) + 0.5)
-            varvar = INT((RND * 100) + 0.5)
+            max_x = 350 + INT(RND * 1449)
+            max_y = (600 / levtype) + INT(RND * (150 * levtype)) * 2
+
+
+            RANDOMIZE TIMER
+            detail = (INT(RND * 299)) + 1
+            RANDOMIZE TIMER
+            raise = INT(RND * 99) + 1
+            RANDOMIZE TIMER
+            varvar = INT(RND * 99) + 1
             x = startplace: y = max_y
+
+            '        CASE "x", "X" 'toggle slow draw
+            '            IF slowdraw = 0 THEN slowdraw = 1 ELSE slowdraw = 0
+            '           x = startplace: y = max_y
 
         CASE CHR$(9) 'TAB=change level type
             IF levtype = 1 THEN levtype = 2 ELSE levtype = 1
@@ -396,8 +414,9 @@ DO
 
         CASE CHR$(27) 'esc
             COLOR 15, background_color
-            LOCATE 1, 1
-            PRINT "gn all!            "
+            CLS
+            _FONT 16
+            PRINT "gn all!"
             END
 
         CASE CHR$(32) 'space=regenerate
