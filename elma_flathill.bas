@@ -1,4 +1,4 @@
-PRINT "Flat track level generator 0.8 by iCS"
+PRINT "Flat track level generator 0.9 by iCS"
 PRINT ""
 PRINT "Level sizes:"
 PRINT "1: Warm Up"
@@ -34,12 +34,12 @@ DO
 LOOP UNTIL max_width <> 0
 
 PRINT ""
-PRINT "Level smoothness:"
+PRINT "Level roughness:"
 PRINT "1: juka"
 PRINT "2: chris"
 PRINT "3: Nekit"
 PRINT ""
-PRINT "SELECT SMOOTHNESS (1-3): ";
+PRINT "SELECT ROUGHNESS (1-3): ";
 
 detail = 0
 DO
@@ -141,7 +141,11 @@ FOR sorszam = 1 TO count
     PRINT #1, LTRIM$(STR$(max_width)) + ",0"
 
     'end svg data
-    PRINT #1, "Z" + CHR$(34) + " id=" + CHR$(34) + "1" + CHR$(34) + " /> </svg>"
+    PRINT #1, "Z" + CHR$(34) + " id=" + CHR$(34) + "1" + CHR$(34) + " />"
+    PRINT #1, "<text xml:space=" + CHR$(34) + "preserve" + CHR$(34) + " style=" + CHR$(34) + "font-style:normal;font-weight:normal;font-size:8px;font-family:Arial;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none" + CHR$(34) + " x=" + CHR$(34) + "0" + CHR$(34) + " y=" + CHR$(34) + "-5" + CHR$(34) + " id=" + CHR$(34) + "text1" + CHR$(34) + ">"
+    PRINT #1, "GENERATED ON " + DATE$ + ", " + TIME$ + " SIZE: " + K$ + ", ROUGHNESS: " + KK$
+    PRINT #1, "</text> </svg>"
+
 
     CLOSE #1
 
