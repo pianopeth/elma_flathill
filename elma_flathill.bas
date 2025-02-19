@@ -3,14 +3,17 @@ max_x = 800: max_y = 600
 res_x = max_x + 200: res_y = max_y + 200
 shift_x = (res_x - max_x) / 2
 shift_y = (res_y - max_y) / 2
-raise = 25: detail = 50: varvar = 10: startplace = 60 'level parameters
+raise = 25: detail = 50: varvar = 10: startplace = 50 'level parameters
 x = startplace: y = max_y
 background_color = 104: sky_color = 54: line_color = 7 'paint colors
 filename$ = "out"
 count = 1
 levtype = 2 '1=hill, 2=flat track
 
+
 DO
+    50
+
     klipbord$ = ""
     res_x = max_x + 200: res_y = max_y + 200
     IF levtype = 1 THEN SCREEN _NEWIMAGE(res_x, (res_y / levtype), 256)
@@ -19,7 +22,7 @@ DO
     PAINT (0, 0), background_color 'paint background
     COLOR 10, background_color
     PRINT ""
-    PRINT "Flat track & hill polygon generator v1.3 (2023-09-01) by iCS [.lev] 2019-2022"
+    PRINT "Flat track & hill polygon generator v1.4 (2023-09-01) by iCS [.lev] 2019-2022"
 
     COLOR 15, background_color: PRINT "[arrows]",: COLOR 7, background_color: PRINT "level size =", max_x; "x"; (max_y / levtype)
     IF levtype = 1 THEN: COLOR 15, background_color: PRINT "(Shift+)[Q/A]",: COLOR 7, background_color: PRINT "raise      =", raise
@@ -53,6 +56,13 @@ DO
     COLOR 7, background_color
     PRINT "SEMI-RANDOM!"
 
+    PRINT ""
+    COLOR 15, background_color
+    PRINT "[1]"
+    COLOR 7, background_color
+    PRINT "MAKE 100 LEV"
+
+
 
     ' PRINT ""
     ' COLOR 15, background_color
@@ -70,8 +80,13 @@ DO
 
     currentraise = raise * RND
     LINE (shift_x, shift_y)-(shift_x, (max_y / levtype) - currentraise + shift_y), line_color 'draw left wall
+    klipbord$ = klipbord$ + "0,0" + (CHR$(13) + CHR$(10))
+    klipbord$ = klipbord$ + "0," + LTRIM$(STR$((max_y / levtype) - currentraise)) + (CHR$(13) + CHR$(10)) 'no + shift_y in SVG!
+
     LINE -(shift_x + startplace, (max_y / levtype) - currentraise + shift_y), line_color 'safe space for the bike
-    klipbord$ = klipbord$ + LTRIM$(STR$(x)) + "," + LTRIM$(STR$(y / levtype)) + (CHR$(13) + CHR$(10))
+    klipbord$ = klipbord$ + LTRIM$(STR$(startplace)) + "," + LTRIM$(STR$((max_y / levtype) - currentraise)) + (CHR$(13) + CHR$(10)) 'startplace
+
+    '    klipbord$ = klipbord$ + LTRIM$(STR$(x)) + "," + LTRIM$(STR$(y / levtype)) + (CHR$(13) + CHR$(10))
 
     DO
         RANDOMIZE TIMER
@@ -172,15 +187,73 @@ DO
     _PRINTSTRING (20 + nextblock, (max_y / levtype) + 180), "short --> long"
 
 
-
+    IF autoszaz = 1 GOTO 150
 
 
     100 'lol
     DO: K$ = INKEY$
     LOOP UNTIL K$ <> ""
+
     SELECT CASE K$
 
-        'WASD - coarse adjust
+
+        CASE "1" 'save 100 levels
+            autoszaz = 1
+            szazszor = 1
+            150
+
+
+            RANDOMIZE TIMER
+            'levtype = INT(RND * 2): IF levtype = 0 THEN levtype = 2
+            max_x = 350 + INT(RND * 649)
+            max_y = (600 / levtype) + INT(RND * (150 * levtype)) * 2
+            RANDOMIZE TIMER
+            detail = (INT(RND * 99)) + 1
+            RANDOMIZE TIMER
+            raise = INT(RND * 29) + 1
+            RANDOMIZE TIMER
+            varvar = INT(RND * 29) + 1
+            x = startplace: y = max_y
+
+            'save lev
+            outlev$ = filename$ + RIGHT$("00000" + LTRIM$(STR$(count)), 5) + ".svg"
+
+            WHILE _FILEEXISTS(outlev$)
+                count = count + 1
+                outlev$ = filename$ + RIGHT$("00000" + LTRIM$(STR$(count)), 5) + ".svg"
+            WEND
+
+
+            IF klipbord$ <> "" THEN
+                OPEN outlev$ FOR OUTPUT AS #1
+
+                ' base svg data
+                PRINT #1, "<?xml version=" + CHR$(34) + "1.0" + CHR$(34) + " encoding=" + CHR$(34) + "UTF-8" + CHR$(34) + " standalone=" + CHR$(34) + "no" + CHR$(34) + "?>"
+                PRINT #1, "<svg xmlns:svg=" + CHR$(34) + "http://www.w3.org/2000/svg" + CHR$(34) + ">"
+                PRINT #1, "<path style=" + CHR$(34) + "fill:#000000;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" + CHR$(34) + " d=" + CHR$(34) + "M"
+                'generated data
+                PRINT #1, klipbord$
+                'end svg data
+                PRINT #1, "Z" + CHR$(34) + " id=" + CHR$(34) + "1" + CHR$(34) + " />"
+                REM                PRINT #1, "<text xml:space=" + CHR$(34) + "preserve" + CHR$(34) + " style=" + CHR$(34) + "font-style:normal;font-weight:normal;font-size:8px;font-family:Arial;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none" + CHR$(34) + " x=" + CHR$(34) + "0" + CHR$(34) + " y=" + CHR$(34) + "-5" + CHR$(34) + " id=" + CHR$(34) + "text1" + CHR$(34) + ">"
+                REM                IF levtype = 1 THEN PRINT #1, "GENERATED ON " + DATE$ + ", " + TIME$ + " LEVEL SIZE:" + STR$(max_x) + "x" + LTRIM$(STR$(max_y)) + " RAISE:" + STR$(raise) + " DETAIL:" + STR$(detail) + " VARIATION:" + STR$(varvar)
+                REM                IF levtype = 2 THEN PRINT #1, "GENERATED ON " + DATE$ + ", " + TIME$ + " LEVEL SIZE:" + STR$(max_x) + "x" + LTRIM$(STR$(max_y)) + " ROUGHNESS:" + STR$(raise) + " DETAIL:" + STR$(detail) + " SMOOTHING:" + STR$(varvar)
+                PRINT #1, "</svg>"
+
+                CLOSE #1
+
+                klipbord$ = ""
+                '                   COLOR 10, background_color
+                '                    PRINT outlev$ + " saved! To make .LEV file, import the SVG output into SLE (Smibu's Level Editor)!"
+                count = count + 1
+            END IF
+
+            'IF autoszaz = 1 THEN _DELAY 0.15
+            szazszor = szazszor + 1
+            IF szazszor = 100 GOTO 100 ELSE GOTO 50
+
+
+            'WASD - coarse adjust
         CASE "q"
             x = startplace: y = max_y
             raise = raise + 5
@@ -396,6 +469,7 @@ DO
         CASE CHR$(9) 'TAB=change level type
             IF levtype = 1 THEN levtype = 2 ELSE levtype = 1
             x = startplace: y = max_y
+
         CASE CHR$(13) 'save level
 
             outlev$ = filename$ + RIGHT$("00000" + LTRIM$(STR$(count)), 5) + ".svg"
@@ -413,8 +487,8 @@ DO
                 PRINT #1, "<?xml version=" + CHR$(34) + "1.0" + CHR$(34) + " encoding=" + CHR$(34) + "UTF-8" + CHR$(34) + " standalone=" + CHR$(34) + "no" + CHR$(34) + "?>"
                 PRINT #1, "<svg xmlns:svg=" + CHR$(34) + "http://www.w3.org/2000/svg" + CHR$(34) + ">"
                 PRINT #1, "<path style=" + CHR$(34) + "fill:#000000;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" + CHR$(34) + " d=" + CHR$(34) + "M"
-                PRINT #1, "0,0"
-                PRINT #1, "0," + LTRIM$(STR$(max_y / levtype))
+                ' PRINT #1, "0,0"
+                ' PRINT #1, "0," + LTRIM$(STR$(max_y / levtype))
                 'generated data
                 PRINT #1, klipbord$
                 'end svg data
@@ -434,6 +508,7 @@ DO
             GOTO 100
 
         CASE CHR$(27) 'esc
+            400
             COLOR 15, background_color
             CLS
             _FONT 16
